@@ -8,11 +8,72 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: eu-north-1
+  environment:
+    USERS_TABLE: UsersTable
+    QUIZ_TABLE: QuizTable
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:logs:eu-north-1:954976318596:log-group:/aws/lambda/quiztopiaapi-dev-createAccount:*
+            - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.USERS_TABLE}
+            - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.USERS_TABLE}/index/UsernameIndex
+            - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.QUIZ_TABLE}
 
 functions:
   createAccount:
     handler: src/createAccount/index.handler
     events:
-      - httpApi:
+      - http:
           path: /
           method: post
+          cors: true
+
+
+resources:
+  Resources:
+    UsersTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: 'userId'
+            AttributeType: 'S'
+          - AttributeName: 'username'
+            AttributeType: 'S'
+        KeySchema:
+          - AttributeName: 'userId'
+            KeyType: 'HASH'
+        GlobalSecondaryIndexes:
+          - IndexName: 'UsernameIndex'
+            KeySchema:
+              - AttributeName: 'username'
+                KeyType: 'HASH'
+            Projection:
+              ProjectionType: 'ALL'
+        BillingMode: PAY_PER_REQUEST
+
+    QuizTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.QUIZ_TABLE}
+        AttributeDefinitions:
+          - AttributeName: 'quizId'
+            AttributeType: 'S'
+          - AttributeName: 'sortKey'
+            AttributeType: 'S'
+        KeySchema:
+          - AttributeName: 'quizId'
+            KeyType: 'HASH'
+          - AttributeName: 'sortKey'
+            KeyType: 'RANGE'
+        BillingMode: PAY_PER_REQUEST
+
