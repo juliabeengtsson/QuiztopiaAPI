@@ -1,31 +1,37 @@
-const jwt = require('jsonwebtoken');
-const { sendResponse, sendError} = require('../../services/response');
+require('dotenv').config()
+const jwt = require('jsonwebtoken')
 
-// Authorizer function to validate JWT token
-module.exports.jwtAuth = async (event) => {
-  // Hämta token från Authorization-headern (hanterar både gemener och versaler)
-  const token = event.headers.Authorization || event.headers.authorization;
+const jwtAuth = {
+  before: async (handler) => {
 
-  // Om ingen token tillhandahålls, returnera en 401 Unauthorized
-  if (!token) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ message: 'Unauthorized: No token provided' }),
-    };
-  }
+    const token = handler.event.headers.Authorization || handler.event.headers.authorization
+    console.log(handler.event, 'handler.event.headers');
 
-  try {
-    // Rensa 'Bearer' prefixet om det finns
-    const cleanedToken = token.startsWith('Bearer ') ? token.slice(7, token.length) : token;
+    if (!token) {
+      throw new Error('Access denied. No token provided.')
+    }
 
-    // Verifiera JWT-tokenen med den hemliga nyckeln från miljövariabeln
-    const decoded = jwt.verify(cleanedToken, process.env.JWT_SECRET);
+    try {
+      const cleanToken = token.replace('Bearer ', '').trim()
 
-    // Returnera en framgångssignal om token är giltig och inkludera decoded användardata
-    return sendResponse(201, 'Authorized', decoded);
+      console.log(cleanToken, 'cleanTOKEN')
 
-  } catch (error) {
-    // Om verifieringen misslyckas, returnera ett generellt felmeddelande utan att läcka detaljer
-    return sendError(401, 'Invalid token', error);
+      const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET);
+
+      handler.event.requestContext.authorizer = decoded;
+
+      console.log('Token är giltig:', decoded);
+
+
+      handler.event.user = decoded
+
+      return;
+
+    } catch (error) {
+      console.error(error)
+      throw new Error('Invalid token.')
+    }
   }
 };
+
+module.exports = jwtAuth;

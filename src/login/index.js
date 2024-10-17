@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const { QueryCommand } = require('@aws-sdk/lib-dynamodb');
 
 exports.login = async (event) => {
-
     try {
         const { username, password } = JSON.parse(event.body);
 
@@ -48,6 +47,8 @@ exports.login = async (event) => {
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
+        
+        console.log(token)
 
         return sendResponse(201, 'Login sucessfull', token)
 

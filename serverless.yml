@@ -1,16 +1,14 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
 org: juliabengt
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: quiztopiaapi
 frameworkVersion: "4"
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs18.x
   region: eu-north-1
   environment:
     USERS_TABLE: UsersTable
-    QUIZ_TABLE: QuizTable
+    QUIZ_TABLE: QuizTable2
     JWT_SECRET: minhemliganyckel
 
   iam:
@@ -30,7 +28,6 @@ provider:
             - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.USERS_TABLE}
             - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.USERS_TABLE}/index/UsernameIndex
             - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.QUIZ_TABLE}
-            - arn:aws:dynamodb:eu-north-1:954976318596:table/${self:provider.environment.JWT_SECRET}
 
 functions:
   createAccount:
@@ -40,6 +37,7 @@ functions:
           path: /
           method: post
           cors: true
+
   login:
     handler: src/login/index.login
     events:
@@ -48,17 +46,13 @@ functions:
           method: post
           cors: true
 
-  jwtAuth:
-    handler: src/middleware/jwtAuthorizer.jwtAuth
-
   createQuiz:
-    handler: src/createQuiz/index.createQuiz
+    handler: src/createQuiz/index.handler
     events:
       - http:
-        path: /
-        method: post
-        cors: true
-   
+          path: /quiz
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -90,12 +84,7 @@ resources:
         AttributeDefinitions:
           - AttributeName: 'quizId'
             AttributeType: 'S'
-          - AttributeName: 'sortKey'
-            AttributeType: 'S'
         KeySchema:
           - AttributeName: 'quizId'
             KeyType: 'HASH'
-          - AttributeName: 'sortKey'
-            KeyType: 'RANGE'
         BillingMode: PAY_PER_REQUEST
-
