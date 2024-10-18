@@ -58,4 +58,4 @@ const createQuiz = async (event) => {
     }
 };
 
-module.exports.handler = middy(createQuiz).use(jwtAuth);
+module.exports.createQuiz = middy(createQuiz).use(jwtAuth);

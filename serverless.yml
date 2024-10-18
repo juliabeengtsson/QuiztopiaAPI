@@ -47,11 +47,27 @@ functions:
           cors: true
 
   createQuiz:
-    handler: src/createQuiz/index.handler
+    handler: src/createQuiz/index.createQuiz
     events:
       - http:
           path: /quiz
           method: post
+          cors: true
+
+  getAllQuiz:
+    handler: src/getAllQuiz/index.getAllQuiz
+    events:
+      - http:
+          path: /getAllQuiz
+          method: get
+          cors: true
+
+  getQuizById:
+    handler: src/getQuizById/index.getQuizById
+    events:
+      - http:
+          path: /getQuizById/{quizId}
+          method: get
           cors: true
 
 resources:
