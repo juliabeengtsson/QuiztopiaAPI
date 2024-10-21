@@ -14,8 +14,6 @@ exports.getQuizById = async (event) => {
             }
         }
 
-        console.log('quiz:', quizId)
-
         const quizParameters = {
             TableName: 'QuizTable2',
             KeyConditionExpression: 'quizId = :quizId',
@@ -24,15 +22,9 @@ exports.getQuizById = async (event) => {
             }
         }
 
-        console.log('quiz:', quizId)
-
-        console.log(quizParameters, 'tjena tjena')
-
         const result = await dynamoDb.query(quizParameters);
         
         const quiz = result.Items[0];
-
-        console.log(quiz, 'quiz:')
 
         if (!quiz) {
             return {
@@ -52,7 +44,6 @@ exports.getQuizById = async (event) => {
         }
 
     } catch(error) {
-        console.log(error, 'Tell me about it:')
         return sendError(500, error);
     }
 }
