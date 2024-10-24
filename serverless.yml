@@ -78,6 +78,14 @@ functions:
           method: delete
           cors: true
 
+  postQuestion:
+    handler: src/addQuestion/index.postQuestion
+    events:
+      - http:
+          path: /{quizId}/question
+          method: post
+          cors: true
+
 resources:
   Resources:
     UsersTable:

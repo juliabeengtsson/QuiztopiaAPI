@@ -6,7 +6,6 @@ const { PutCommand } = require('@aws-sdk/lib-dynamodb');
 const jwtAuth = require('../middleware/jwtAuthorizer');
 
 const createQuiz = async (event) => {
-
     try {
         const { quizName, questions } = JSON.parse(event.body);
 
@@ -53,7 +52,6 @@ const createQuiz = async (event) => {
         return sendResponse(201, { message: 'Quiz created successfully', quizId });
 
     } catch (error) {
-        console.log('Error: ', error);
         return sendError(500, { message: 'An error occurred', error });
     }
 };

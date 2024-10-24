@@ -1,60 +1,34 @@
 const { dynamoDb } = require('../../services/database');
+const { DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const middy = require('@middy/core')
 const jwtAuth = require('../middleware/jwtAuthorizer');
+const { sendError, sendResponse } = require('../../services/response');
 
 const deleteQuiz = async (event) => {
+    const { quizId } = event.pathParameters; // Hämta quizId från URL:en
+
+    if (!quizId) {
+        return sendError(400, { message: 'Quiz ID is required' });
+    }
+
     try {
-        const { userId, quizId } = event.pathParameters;
-
-        if (!userId || !quizId) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({
-                    message: 'Please provide both userId and quizId in the URL'
-                })
-            }
-        }
-
-        const getParams = {
-            TableName: 'QuizTable2',
-            Key: {
-                userId: userId, 
-                quizId: quizId   
-            }
-        }
-
-        const result = await dynamoDb.get(getParams);
-        const quiz = result.Item;
-
-        if (!quiz) {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({
-                    message: 'Quiz not found'
-                })
-            }
-        }
-
-        const deleteParams = {
-            TableName: 'QuizTable2',
-            Key: {
-                userId: userId,  
-                quizId: quizId   
-            }
-        }
-
-        await dynamoDb.delete(deleteParams);
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: 'Quiz deleted successfully'
+        // Skicka en begäran för att ta bort quiz från DynamoDB
+        await dynamoDb.send(
+            new DeleteCommand({
+                TableName: process.env.QUIZ_TABLE,
+                Key: { quizId },
             })
-        }
+        );
 
+        return sendResponse(200, {
+            message: 'Quiz successfully deleted.',
+            quizId,
+        });
     } catch (error) {
-        console.log(error, 'tell me:')
-        return sendError(500, { message: 'An error occurred', error });
+        return sendError(500, {
+            message: 'Could not delete quiz.',
+            error: JSON.stringify(error),
+        });
     }
 }
 

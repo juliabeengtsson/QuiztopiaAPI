@@ -47,8 +47,6 @@ exports.login = async (event) => {
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
-        
-        console.log(token)
 
         return sendResponse(201, 'Login sucessfull', token)
 

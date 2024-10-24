@@ -14,14 +14,11 @@ const jwtAuth = {
     try {
       const cleanToken = token.replace('Bearer ', '').trim()
 
-      console.log(cleanToken, 'cleanTOKEN')
-
       const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET);
 
       handler.event.requestContext.authorizer = decoded;
 
       console.log('Token är giltig:', decoded);
-
 
       handler.event.user = decoded
 
